@@ -12,6 +12,10 @@ import ARKit
 class ViewController: UIViewController, ARSCNViewDelegate {
     //MARK: Properties
     let config = ARWorldTrackingConfiguration()
+    var power: Float = 1.0
+    var basketAdded: Bool {
+        return self.sceneView.scene.rootNode.childNode(withName: "Court", recursively: false) != nil
+    }
     
     //MARK: Outlets
     @IBOutlet weak var sceneView: ARSCNView!
@@ -40,6 +44,33 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+    }
+    
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if self.basketAdded {
+            guard let pointOfView = self.sceneView.pointOfView else { return }
+            
+            self.power = 10.0
+            
+            let transform = pointOfView.transform
+            let location = SCNVector3(transform.m41, transform.m42, transform.m43)
+            let orientation = SCNVector3(-transform.m31, -transform.m32, -transform.m33)
+            let position = self.addVectors(first: location, second: orientation)
+            let ballNode = SCNNode(geometry: SCNSphere(radius: 0.3))
+            
+            ballNode.geometry?.firstMaterial?.diffuse.contents = #imageLiteral(resourceName: "Ball")
+            ballNode.position = position
+            
+            // The .dynamic type here indicates that the object will be effected by
+            // external forces like gravity, and other applied forces
+            let physicsBody = SCNPhysicsBody(type: .dynamic, shape: SCNPhysicsShape(node: ballNode))
+            ballNode.physicsBody = physicsBody
+            
+            // setting asImpulse to true causes the ball to launch immediately after a touch is detected
+            ballNode.physicsBody?.applyForce(SCNVector3(orientation.x * power, orientation.y * power, orientation.z * power), asImpulse: true)
+            
+            self.sceneView.scene.rootNode.addChildNode(ballNode)
+        }
     }
 
     func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
@@ -78,8 +109,18 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         let positionOfPlane = node.worldTransform.columns.3
         
         courtNode?.position = SCNVector3(positionOfPlane.x, positionOfPlane.y, positionOfPlane.z)
+        // The use of static() indicates that the basket can interact with other nodes
+        // but will not be effected by forces like gravity
+        courtNode?.physicsBody = SCNPhysicsBody(type: .static, shape: SCNPhysicsShape(node: courtNode!, options: [
+            SCNPhysicsShape.Option.keepAsCompound: true,
+            SCNPhysicsShape.Option.type: SCNPhysicsShape.ShapeType.concavePolyhedron
+        ]))
         
         self.sceneView.scene.rootNode.addChildNode(courtNode!)
+    }
+    
+    func addVectors(first: SCNVector3, second: SCNVector3) -> SCNVector3 {
+        return SCNVector3Make(first.x + second.x, first.y + second.y, first.z + second.z)
     }
 }
 
