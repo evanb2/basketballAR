@@ -25,8 +25,9 @@
                                 <rect key="frame" x="175" y="321" width="24" height="24"/>
                                 <state key="normal" image="Plus"/>
                             </button>
-                            <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Plane Detected" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0dr-90-qq2">
-                                <rect key="frame" x="110.5" y="60" width="154.5" height="30.5"/>
+                            <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Floor Detected! Tap to place the court" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0dr-90-qq2">
+                                <rect key="frame" x="16" y="60" width="343" height="60.5"/>
+                                <color key="backgroundColor" white="1" alpha="0.74914383561643838" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <fontDescription key="fontDescription" name="AvenirNext-Regular" family="Avenir Next" pointSize="22"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
@@ -36,12 +37,13 @@
                         <constraints>
                             <constraint firstItem="0dr-90-qq2" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="40" id="7yP-wG-43d"/>
                             <constraint firstItem="8Sv-I8-yhc" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="GeH-53-Ec0"/>
-                            <constraint firstItem="0dr-90-qq2" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="bCf-hP-L0q"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="0dr-90-qq2" secondAttribute="trailing" constant="16" id="SKg-q2-G5o"/>
                             <constraint firstItem="EVm-p7-byf" firstAttribute="top" secondItem="8bC-Xf-vdC" secondAttribute="top" id="btX-0u-5t9"/>
                             <constraint firstItem="EVm-p7-byf" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="cuL-4F-dWz"/>
                             <constraint firstItem="EVm-p7-byf" firstAttribute="bottom" secondItem="6Tk-OE-BBY" secondAttribute="bottom" id="dv3-go-Ya6"/>
                             <constraint firstItem="EVm-p7-byf" firstAttribute="trailing" secondItem="6Tk-OE-BBY" secondAttribute="trailing" id="e7D-CZ-N12"/>
                             <constraint firstItem="8Sv-I8-yhc" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="my8-aH-XL8"/>
+                            <constraint firstItem="0dr-90-qq2" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="16" id="yVL-Jy-aR7"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>

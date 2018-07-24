@@ -85,11 +85,33 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         let touchLocation = sender.location(in: sceneView)
         let result = sceneView.hitTest(touchLocation, types: [.existingPlaneUsingExtent])
         
-        if result.isEmpty {
+        guard let first = result.first else { return }
+        
+        self.addCourt(to: first)
+    }
+    
+    func addCourt(to node: ARHitTestResult) {
+        if courtIsAdded {
             return
         }
         
-        self.addCourt(to: result.first!)
+        let courtScene = SCNScene(named: "Scenes.scnassets/Court.scn")
+        let courtNode = courtScene?.rootNode.childNode(withName: "Court", recursively: false)
+        let positionOfPlane = node.worldTransform.columns.3
+        
+        courtNode?.position = SCNVector3(positionOfPlane.x, positionOfPlane.y, positionOfPlane.z)
+        // The use of static() indicates that the basket can interact with other nodes
+        // but will not be effected by forces like gravity
+        courtNode?.physicsBody = SCNPhysicsBody(type: .static, shape: SCNPhysicsShape(node: courtNode!, options: [
+            SCNPhysicsShape.Option.keepAsCompound: true,
+            SCNPhysicsShape.Option.type: SCNPhysicsShape.ShapeType.concavePolyhedron
+        ]))
+        
+        self.sceneView.scene.rootNode.addChildNode(courtNode!)
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: {
+            self.courtIsAdded = true
+        })
     }
     
     func shootBall() {
@@ -117,30 +139,6 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         ballNode.physicsBody?.applyForce(SCNVector3(orientation.x * power, orientation.y * power, orientation.z * power), asImpulse: true)
         
         self.sceneView.scene.rootNode.addChildNode(ballNode)
-    }
-    
-    func addCourt(to node: ARHitTestResult) {
-        if courtIsAdded {
-            return
-        }
-        
-        let courtScene = SCNScene(named: "Scenes.scnassets/Court.scn")
-        let courtNode = courtScene?.rootNode.childNode(withName: "Court", recursively: false)
-        let positionOfPlane = node.worldTransform.columns.3
-        
-        courtNode?.position = SCNVector3(positionOfPlane.x, positionOfPlane.y, positionOfPlane.z)
-        // The use of static() indicates that the basket can interact with other nodes
-        // but will not be effected by forces like gravity
-        courtNode?.physicsBody = SCNPhysicsBody(type: .static, shape: SCNPhysicsShape(node: courtNode!, options: [
-            SCNPhysicsShape.Option.keepAsCompound: true,
-            SCNPhysicsShape.Option.type: SCNPhysicsShape.ShapeType.concavePolyhedron
-        ]))
-        
-        self.sceneView.scene.rootNode.addChildNode(courtNode!)
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: {
-            self.courtIsAdded = true
-        })
     }
     
     func removeShotBalls() {
