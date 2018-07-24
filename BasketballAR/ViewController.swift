@@ -8,14 +8,14 @@
 
 import UIKit
 import ARKit
+import Each
 
 class ViewController: UIViewController, ARSCNViewDelegate {
     //MARK: Properties
-    let config = ARWorldTrackingConfiguration()
     var power: Float = 1.0
-    var basketAdded: Bool {
-        return self.sceneView.scene.rootNode.childNode(withName: "Court", recursively: false) != nil
-    }
+    let timer = Each(0.05).seconds
+    let config = ARWorldTrackingConfiguration()
+    var courtIsAdded: Bool = false
     
     //MARK: Outlets
     @IBOutlet weak var sceneView: ARSCNView!
@@ -23,11 +23,6 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        self.sceneView.debugOptions = [
-            ARSCNDebugOptions.showWorldOrigin,
-            ARSCNDebugOptions.showFeaturePoints,
-        ]
         
         self.config.planeDetection = .horizontal
         
@@ -39,6 +34,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
         let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleTap))
         self.sceneView.addGestureRecognizer(tapGestureRecognizer)
+        tapGestureRecognizer.cancelsTouchesInView = false
     }
 
     override func didReceiveMemoryWarning() {
@@ -47,30 +43,23 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        if self.basketAdded {
-            guard let pointOfView = self.sceneView.pointOfView else { return }
-            
-            self.power = 10.0
-            
-            let transform = pointOfView.transform
-            let location = SCNVector3(transform.m41, transform.m42, transform.m43)
-            let orientation = SCNVector3(-transform.m31, -transform.m32, -transform.m33)
-            let position = self.addVectors(first: location, second: orientation)
-            let ballNode = SCNNode(geometry: SCNSphere(radius: 0.3))
-            
-            ballNode.geometry?.firstMaterial?.diffuse.contents = #imageLiteral(resourceName: "Ball")
-            ballNode.position = position
-            
-            // The .dynamic type here indicates that the object will be effected by
-            // external forces like gravity, and other applied forces
-            let physicsBody = SCNPhysicsBody(type: .dynamic, shape: SCNPhysicsShape(node: ballNode))
-            ballNode.physicsBody = physicsBody
-            
-            // setting asImpulse to true causes the ball to launch immediately after a touch is detected
-            ballNode.physicsBody?.applyForce(SCNVector3(orientation.x * power, orientation.y * power, orientation.z * power), asImpulse: true)
-            
-            self.sceneView.scene.rootNode.addChildNode(ballNode)
+        if !self.courtIsAdded {
+            return
         }
+        
+        self.timer.perform { () -> NextStep in
+            self.power = self.power + 1
+            return .continue
+        }
+    }
+    
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if self.courtIsAdded {
+            self.timer.stop()
+            self.shootBall()
+        }
+        
+        self.power = 1
     }
 
     func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
@@ -94,16 +83,47 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         }
         
         let touchLocation = sender.location(in: sceneView)
-        let hitTest = sceneView.hitTest(touchLocation, types: [.existingPlaneUsingExtent])
+        let result = sceneView.hitTest(touchLocation, types: [.existingPlaneUsingExtent])
         
-        if hitTest.isEmpty {
+        if result.isEmpty {
             return
         }
         
-        self.addCourt(to: hitTest.first!)
+        self.addCourt(to: result.first!)
+    }
+    
+    func shootBall() {
+        guard let pointOfView = self.sceneView.pointOfView else { return }
+        
+        self.removeShotBalls()
+        
+        let transform = pointOfView.transform
+        let location = SCNVector3(transform.m41, transform.m42, transform.m43)
+        let orientation = SCNVector3(-transform.m31, -transform.m32, -transform.m33)
+        let position = self.addVectors(first: location, second: orientation)
+        let ballNode = SCNNode(geometry: SCNSphere(radius: 0.25))
+        
+        ballNode.geometry?.firstMaterial?.diffuse.contents = #imageLiteral(resourceName: "Ball")
+        ballNode.position = position
+        ballNode.name = "basketball"
+        
+        // The .dynamic type here indicates that the object will be effected by
+        // external forces like gravity, and other applied forces
+        let physicsBody = SCNPhysicsBody(type: .dynamic, shape: SCNPhysicsShape(node: ballNode))
+        physicsBody.restitution = 0.2
+        ballNode.physicsBody = physicsBody
+        
+        // setting asImpulse to true causes the ball to launch immediately after a touch is detected
+        ballNode.physicsBody?.applyForce(SCNVector3(orientation.x * power, orientation.y * power, orientation.z * power), asImpulse: true)
+        
+        self.sceneView.scene.rootNode.addChildNode(ballNode)
     }
     
     func addCourt(to node: ARHitTestResult) {
+        if courtIsAdded {
+            return
+        }
+        
         let courtScene = SCNScene(named: "Scenes.scnassets/Court.scn")
         let courtNode = courtScene?.rootNode.childNode(withName: "Court", recursively: false)
         let positionOfPlane = node.worldTransform.columns.3
@@ -117,10 +137,26 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         ]))
         
         self.sceneView.scene.rootNode.addChildNode(courtNode!)
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: {
+            self.courtIsAdded = true
+        })
+    }
+    
+    func removeShotBalls() {
+        self.sceneView.scene.rootNode.enumerateChildNodes { (node, _) in
+            guard node.name == "basketball" else { return }
+            node.removeFromParentNode()
+        }
     }
     
     func addVectors(first: SCNVector3, second: SCNVector3) -> SCNVector3 {
         return SCNVector3Make(first.x + second.x, first.y + second.y, first.z + second.z)
+    }
+    
+    // If the ViewController gets deinitialized, run this code
+    deinit {
+        self.timer.stop()
     }
 }
 
