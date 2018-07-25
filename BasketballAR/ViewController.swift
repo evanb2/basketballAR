@@ -19,7 +19,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     
     //MARK: Outlets
     @IBOutlet weak var sceneView: ARSCNView!
-    @IBOutlet weak var planeDetectedLabel: UILabel!
+    @IBOutlet weak var instructionLabel: UILabel!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -47,6 +47,8 @@ class ViewController: UIViewController, ARSCNViewDelegate {
             return
         }
         
+        self.instructionLabel.isHidden = true
+        
         self.timer.perform { () -> NextStep in
             self.power = self.power + 1
             return .continue
@@ -68,11 +70,11 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         }
         
         DispatchQueue.main.async {
-            self.planeDetectedLabel.isHidden = false
+            self.instructionLabel.text = "Surface detected..."
         }
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3, execute: {
-            self.planeDetectedLabel.isHidden = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1, execute: {
+            self.instructionLabel.text = "Now tap the surface!"
         })
     }
     
@@ -86,6 +88,8 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         let result = sceneView.hitTest(touchLocation, types: [.existingPlaneUsingExtent])
         
         guard let first = result.first else { return }
+        
+        instructionLabel.text = "Press screen to shoot"
         
         self.addCourt(to: first)
     }

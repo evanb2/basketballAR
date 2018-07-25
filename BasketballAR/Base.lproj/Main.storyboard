@@ -25,8 +25,8 @@
                                 <rect key="frame" x="175" y="321" width="24" height="24"/>
                                 <state key="normal" image="Plus"/>
                             </button>
-                            <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Floor Detected! Tap to place the court" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0dr-90-qq2">
-                                <rect key="frame" x="16" y="60" width="343" height="60.5"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Find a flat furface..." textAlignment="center" lineBreakMode="wordWrap" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0dr-90-qq2">
+                                <rect key="frame" x="16" y="60" width="343" height="30.5"/>
                                 <color key="backgroundColor" white="1" alpha="0.74914383561643838" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <fontDescription key="fontDescription" name="AvenirNext-Regular" family="Avenir Next" pointSize="22"/>
                                 <nil key="textColor"/>
@@ -48,7 +48,7 @@
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
                     <connections>
-                        <outlet property="planeDetectedLabel" destination="0dr-90-qq2" id="REd-2E-fvs"/>
+                        <outlet property="instructionLabel" destination="0dr-90-qq2" id="geC-Qh-TOI"/>
                         <outlet property="sceneView" destination="EVm-p7-byf" id="g5I-Yd-Itw"/>
                     </connections>
                 </viewController>
